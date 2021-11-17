@@ -1,7 +1,7 @@
 defmodule Teacher.CoinDataWorker do
   use GenServer
 
-  @url = "https://api.coindesk.com/v1/bpi/currentprice.json"
+  @url "https://api.coindesk.com/v1/bpi/currentprice.json"
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
@@ -13,11 +13,19 @@ defmodule Teacher.CoinDataWorker do
   end
 
   def handle_info(:coin_fetch, state) do
+    price = coin_price()
+    IO.inspect("curent price: #{price}")
+    schedule_coin_fetch()
+    {:noreply, Map.put(state, :bpi, price)}
+  end
+
+  defp coin_price do
     @url
     |> HTTPoison.get!()
     |> Map.get(:body)
-    |> IO.inspect(label: "in the pipe")
     |> Jason.decode!()
+    |> Map.get("bpi")
+    |> Map.get("USD")
     |> Map.get("rate")
   end
 

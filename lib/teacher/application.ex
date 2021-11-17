@@ -8,7 +8,7 @@ defmodule Teacher.Application do
   def start(_type, _args) do
     children = [
       # Starts a worker by calling: Teacher.Worker.start_link(arg)
-      # {Teacher.Worker, arg}
+      {Teacher.CoinDataWorker, %{}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
