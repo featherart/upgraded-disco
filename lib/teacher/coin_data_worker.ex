@@ -1,10 +1,12 @@
 defmodule Teacher.CoinDataWorker do
   use GenServer
 
-  @url "https://api.coindesk.com/v1/bpi/currentprice.json"
+  @url "https://api.coindesk.com/v1/"
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: __MODULE__)
+    id = Map.get(args, :id)
+    IO.inspect(id, label: "in startlink")
+    GenServer.start_link(__MODULE__, args, name: id)
   end
 
   def init(state) do
@@ -13,20 +15,33 @@ defmodule Teacher.CoinDataWorker do
   end
 
   def handle_info(:coin_fetch, state) do
-    price = coin_price()
-    IO.inspect("curent price: #{price}")
+    updated_state = state
+      |> Map.get(:id)
+      |> coin_data()
+      |> update_state(state)
+
     schedule_coin_fetch()
-    {:noreply, Map.put(state, :bpi, price)}
+    {:noreply, updated_state}
   end
 
-  defp coin_price do
-    @url
+  defp update_state(%{"rate_float" => price}, existing_state) do
+    IO.inspect(existing_state, label: "in update state")
+    IO.inspect(price, label: "price")
+    Map.merge(existing_state, %{price: price})
+  end
+
+  defp coin_data(id) do
+    url(id)
     |> HTTPoison.get!()
     |> Map.get(:body)
     |> Jason.decode!()
-    |> Map.get("bpi")
+    |> IO.inspect(label: "coin data:")
+    |> Map.get(Atom.to_string(id))
     |> Map.get("USD")
-    |> Map.get("rate")
+  end
+
+  defp url(id) do
+    "#{@url}#{Atom.to_string(id)}/currentprice.json"
   end
 
   defp schedule_coin_fetch() do

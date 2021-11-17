@@ -1,6 +1,4 @@
 defmodule Teacher.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
@@ -8,7 +6,7 @@ defmodule Teacher.Application do
   def start(_type, _args) do
     children = [
       # Starts a worker by calling: Teacher.Worker.start_link(arg)
-      {Teacher.CoinDataWorker, %{}}
+      {Teacher.CoinDataWorker, %{id: :bpi}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
